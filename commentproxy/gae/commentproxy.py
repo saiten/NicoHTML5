@@ -64,7 +64,11 @@ class GetComment(webapp.RequestHandler):
             comment = {}
             for key in node.attributes.keys():
                 comment[key] = node.attributes[key].value
-            comment['content'] = node.childNodes[0].data;
+
+            if node.firstChild != None:
+                comment['content'] = node.firstChild.data
+            else:
+                comment['content'] = ""
             comments.append(comment)          
 
         json = { 'status': 'ok', 'thread': thread, 'comments': comments }
@@ -80,7 +84,7 @@ class GetComment(webapp.RequestHandler):
 application = webapp.WSGIApplication([('/', IndexPage), 
                                       ('/getcomment', GetComment) 
                                       ],
-                                     debug=True);
+                                     debug=False);
 
 def main():
     run_wsgi_app(application);

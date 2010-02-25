@@ -595,8 +595,7 @@ Deferred.define = function (obj, list) {
 // NicoHTML5
 //
 //
-if(!NicoHTML5) var NicoHTML5 = {};
-
+NicoHTML5 = {};
 NicoHTML5.sec2MinSec = function(tm) {
     var m = "000" + Math.floor(tm / 60);
     var s = "00" + Math.floor(tm % 60);
@@ -2037,11 +2036,11 @@ NicoHTML5.CanvasCommentOverlay.prototype = {
 	    document.getElementsByTagName("head")[0].appendChild(css);
 	    
 	    var overlayType = 'canvas';
-	    if(NicoHTML5_OverlayType)
+	    if(typeof NicoHTML5_OverlayType != 'undefined')
 		overlayType = NicoHTML5_OverlayType;
 
 	    var commentInterval = 50;
-	    if(NicoHTML5_CommentInterval)
+	    if(typeof NicoHTML5_CommentInterval != 'undefined')
 		commentInterval = NicoHTML5_CommentInterval;
 
 	    var videoInfo = {};

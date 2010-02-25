@@ -18,7 +18,7 @@ cat nicohtml5/DOMCommentOverlay.js >> $tempfile
 cat nicohtml5/CanvasCommentOverlay.js >> $tempfile
 cat main.js >> $tempfile
 
-#cp $tempfile $target
-yuicompressor -o $target $tempfile
+cp $tempfile $target
+#yuicompressor -o $target $tempfile
 rm -f $tempfile
 

@@ -131,8 +131,13 @@ NicoHTML5.VideoPlayer.prototype = {
 	this.video.pause();
     },
 
-    load: function(src) {
-	this.video.src = src;
+    load: function(src, type) {
+	var source = document.createElement("source");
+	source.src = src;
+	source.type = type
+
+	this.video.appendChild(source);
+
 	this.video.load();
 	if(this.loadTimer) {
 	    clearInterval(this.loadTimer);

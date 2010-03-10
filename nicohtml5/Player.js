@@ -247,7 +247,7 @@ NicoHTML5.Player.prototype = {
 		res_from = 1000;
 	}
 
-	return http.jsonp("http://commentproxy.appspot.com/getcomment", {
+	return http.jsonp("https://commentproxy.appspot.com/getcomment", {
 	    ms: self.info.ms,
 	    t: self.info.thread_id,
 	    res_from: res_from
@@ -302,7 +302,8 @@ NicoHTML5.Player.prototype = {
 	    self.createPlayer();
 	    self.log("createplayer() ok");
 
-	    self.videoPlayer.load(self.info.url);
+	    self.log("loading video : " + self.info.url + " ...");
+	    self.videoPlayer.load(self.info.url, 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
 
 	    return self.getComment();
 	}).next(function() {

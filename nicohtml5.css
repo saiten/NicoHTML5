@@ -119,7 +119,7 @@
   position: absolute;
   top: 0px;
   left: 0px;
-  background: -webkit-gradient(linear, left top, left bottom, from(#555), to(#222));
+  background: #000;
   border: 1px solid #000;
   width: 512px;
   height: 384px;

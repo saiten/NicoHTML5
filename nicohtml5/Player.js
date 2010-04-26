@@ -14,7 +14,7 @@ NicoHTML5.Player.prototype = {
 	this.target = target;
 	this.options = {
 	    overlaytype: "canvas",
-	    commentInterval: 80,
+	    commentInterval: 200,
 	    videoInfo: {
 		duration: 0,
 		viewCount: 0,
@@ -44,7 +44,6 @@ NicoHTML5.Player.prototype = {
 	// video player
 	var vp = document.createElement("div");
 	vp.className = "videoplayer";
-	vp.style.zIndex = 0;
 	this.videoPlayer = new NicoHTML5.VideoPlayer(vp, {
 	    width: width,
 	    height: height,
@@ -54,20 +53,20 @@ NicoHTML5.Player.prototype = {
 	    onSeek: function() { self.onSeek(); },
 	    onFailed: function(code, msg) { alert(msg); }
 	});
+	var vv = this.videoPlayer.video;
 	var vc = this.videoPlayer.videoContainer;
 
 	// comment overlay
 	if(this.options.overlaytype == "canvas") {
 	    var co = document.createElement("canvas");
 	    co.className = "commentoverlay";
-	    co.style.zIndex = 1;
 	    this.commentOverlay = new NicoHTML5.CanvasCommentOverlay(co, width, height);
 	} else {
 	    var co = document.createElement("div");
 	    co.className = "commentoverlay";
-	    co.style.zIndex = 1;
 	    this.commentOverlay = new NicoHTML5.DOMCommentOverlay(co, width, height, maxShow/2);
 	}
+
 	vc.appendChild(co);
 
 	// comment engine
@@ -263,6 +262,7 @@ NicoHTML5.Player.prototype = {
 
     onPlay: function() {
 	var self = this;
+
 	if(this.commentUpdate == null) {
 	    this.commentUpdate = setInterval(function() { self.main(); }, this.options.commentInterval);
 	}
@@ -303,7 +303,7 @@ NicoHTML5.Player.prototype = {
 	    self.log("createplayer() ok");
 
 	    self.log("loading video : " + self.info.url + " ...");
-	    self.videoPlayer.load(self.info.url, 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+	    self.videoPlayer.load(self.info.url);
 
 	    return self.getComment();
 	}).next(function() {

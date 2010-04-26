@@ -595,7 +595,8 @@ Deferred.define = function (obj, list) {
 // NicoHTML5
 //
 //
-NicoHTML5 = {};
+if(!NicoHTML5) var NicoHTML5 = {};
+
 NicoHTML5.sec2MinSec = function(tm) {
     var m = "000" + Math.floor(tm / 60);
     var s = "00" + Math.floor(tm % 60);
@@ -617,7 +618,7 @@ NicoHTML5.Player.prototype = {
 	this.target = target;
 	this.options = {
 	    overlaytype: "canvas",
-	    commentInterval: 80,
+	    commentInterval: 200,
 	    videoInfo: {
 		duration: 0,
 		viewCount: 0,
@@ -647,7 +648,6 @@ NicoHTML5.Player.prototype = {
 	// video player
 	var vp = document.createElement("div");
 	vp.className = "videoplayer";
-	vp.style.zIndex = 0;
 	this.videoPlayer = new NicoHTML5.VideoPlayer(vp, {
 	    width: width,
 	    height: height,
@@ -657,20 +657,20 @@ NicoHTML5.Player.prototype = {
 	    onSeek: function() { self.onSeek(); },
 	    onFailed: function(code, msg) { alert(msg); }
 	});
+	var vv = this.videoPlayer.video;
 	var vc = this.videoPlayer.videoContainer;
 
 	// comment overlay
 	if(this.options.overlaytype == "canvas") {
 	    var co = document.createElement("canvas");
 	    co.className = "commentoverlay";
-	    co.style.zIndex = 1;
 	    this.commentOverlay = new NicoHTML5.CanvasCommentOverlay(co, width, height);
 	} else {
 	    var co = document.createElement("div");
 	    co.className = "commentoverlay";
-	    co.style.zIndex = 1;
 	    this.commentOverlay = new NicoHTML5.DOMCommentOverlay(co, width, height, maxShow/2);
 	}
+
 	vc.appendChild(co);
 
 	// comment engine
@@ -850,7 +850,7 @@ NicoHTML5.Player.prototype = {
 		res_from = 1000;
 	}
 
-	return http.jsonp("http://commentproxy.appspot.com/getcomment", {
+	return http.jsonp("https://commentproxy.appspot.com/getcomment", {
 	    ms: self.info.ms,
 	    t: self.info.thread_id,
 	    res_from: res_from
@@ -866,6 +866,7 @@ NicoHTML5.Player.prototype = {
 
     onPlay: function() {
 	var self = this;
+
 	if(this.commentUpdate == null) {
 	    this.commentUpdate = setInterval(function() { self.main(); }, this.options.commentInterval);
 	}
@@ -905,6 +906,7 @@ NicoHTML5.Player.prototype = {
 	    self.createPlayer();
 	    self.log("createplayer() ok");
 
+	    self.log("loading video : " + self.info.url + " ...");
 	    self.videoPlayer.load(self.info.url);
 
 	    return self.getComment();
@@ -977,8 +979,6 @@ NicoHTML5.VideoPlayer.prototype = {
 	v.width = this.options.width;
 	v.height = this.options.height;
 	v.autoplay = false;
-	v.autobuffer = false;
-	
 	if(!!navigator.userAgent.match(/iPad/))
 	    v.controls = true;
 	else
@@ -994,6 +994,10 @@ NicoHTML5.VideoPlayer.prototype = {
 	v.addEventListener("seek",           function() { self.onSeek(); });
 	v.addEventListener("pause",          function() { self.onPause(); });
 	v.addEventListener("ended",          function() { self.onEnded(); });
+	//v.addEventListener("loadstart", function(e) { self.onEvent(e); });
+	//v.addEventListener("abort",     function(e) { self.onEvent(e); });
+	//v.addEventListener("error",     function(e) { self.onEvent(e); });
+	//v.addEventListener("emptied",   function(e) { self.onEvent(e); });
 	//v.addEventListener("volumechange",   function() { self.onVolumeChange(); });
 	this.video = v;
 
@@ -1027,12 +1031,18 @@ NicoHTML5.VideoPlayer.prototype = {
 	this.volumebar.setDuration(1.0);
 	this.volumebar.setBuffered(1.0);
 	vbc.appendChild(vb);
+
+	var rb = document.createElement("div");
+	rb.className = "videoplayer_reload_button";
+	rb.innerHTML = "R";
+	rb.addEventListener("mousedown", function() { self.pressReloadButton(); });
 	
 	cc.appendChild(pb);
 	cc.appendChild(bb);
 	cc.appendChild(sb);
 	cc.appendChild(tb);
 	cc.appendChild(vbc);
+	cc.appendChild(rb);
 
 	this.target.appendChild(vc);
 	this.target.appendChild(cc);	
@@ -1051,6 +1061,13 @@ NicoHTML5.VideoPlayer.prototype = {
 	}
     },
 
+    pressReloadButton: function() {
+	if(this.video.currentTime > 0.0) {
+	    this.onSeek(0.0);
+	}
+	this.reload();
+    },
+
     play: function() {
 	if(this.video.currentSrc == undefined || this.video.currentSrc == "")
 	    return;
@@ -1064,13 +1081,29 @@ NicoHTML5.VideoPlayer.prototype = {
 	this.video.pause();
     },
 
-    load: function(src) {
+    load: function(src, type) {
 	this.video.src = src;
+	if(type)
+	    this.video.type = type;
+
 	this.video.load();
+
 	if(this.loadTimer) {
 	    clearInterval(this.loadTimer);
 	    this.laodTimer = null;
 	}
+    },
+
+    reload: function() {
+	if(this.video.src) {
+	    var src = this.video.src;
+	    var type = this.video.type;
+	    this.load(src, type);	    
+	}
+    },
+
+    onEvent: function(e) {
+	alert(e.type);
     },
 
     onProgress: function() {
@@ -1842,6 +1875,7 @@ NicoHTML5.DOMCommentOverlay.prototype = {
 	    layer._isUse = false;
 
 	    this.container.appendChild(layer);
+
 	    this.commentLayers.push(layer);
 	}
     },
@@ -1905,7 +1939,7 @@ NicoHTML5.DOMCommentOverlay.prototype = {
 	    if(! this.commentLayers[i]._isUse) {
 		layer = this.commentLayers[i];
 		break;
-	    }	    
+	    }
 	}
 
 	if(layer) {
@@ -2039,7 +2073,7 @@ NicoHTML5.CanvasCommentOverlay.prototype = {
 	    if(typeof NicoHTML5_OverlayType != 'undefined')
 		overlayType = NicoHTML5_OverlayType;
 
-	    var commentInterval = 50;
+	    var commentInterval = 120;
 	    if(typeof NicoHTML5_CommentInterval != 'undefined')
 		commentInterval = NicoHTML5_CommentInterval;
 

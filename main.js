@@ -18,7 +18,7 @@
 	    if(typeof NicoHTML5_OverlayType != 'undefined')
 		overlayType = NicoHTML5_OverlayType;
 
-	    var commentInterval = 50;
+	    var commentInterval = 120;
 	    if(typeof NicoHTML5_CommentInterval != 'undefined')
 		commentInterval = NicoHTML5_CommentInterval;
 

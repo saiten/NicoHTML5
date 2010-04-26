@@ -44,8 +44,6 @@ NicoHTML5.VideoPlayer.prototype = {
 	v.width = this.options.width;
 	v.height = this.options.height;
 	v.autoplay = false;
-	v.autobuffer = false;
-	
 	if(!!navigator.userAgent.match(/iPad/))
 	    v.controls = true;
 	else
@@ -61,6 +59,10 @@ NicoHTML5.VideoPlayer.prototype = {
 	v.addEventListener("seek",           function() { self.onSeek(); });
 	v.addEventListener("pause",          function() { self.onPause(); });
 	v.addEventListener("ended",          function() { self.onEnded(); });
+	//v.addEventListener("loadstart", function(e) { self.onEvent(e); });
+	//v.addEventListener("abort",     function(e) { self.onEvent(e); });
+	//v.addEventListener("error",     function(e) { self.onEvent(e); });
+	//v.addEventListener("emptied",   function(e) { self.onEvent(e); });
 	//v.addEventListener("volumechange",   function() { self.onVolumeChange(); });
 	this.video = v;
 
@@ -94,12 +96,18 @@ NicoHTML5.VideoPlayer.prototype = {
 	this.volumebar.setDuration(1.0);
 	this.volumebar.setBuffered(1.0);
 	vbc.appendChild(vb);
+
+	var rb = document.createElement("div");
+	rb.className = "videoplayer_reload_button";
+	rb.innerHTML = "R";
+	rb.addEventListener("mousedown", function() { self.pressReloadButton(); });
 	
 	cc.appendChild(pb);
 	cc.appendChild(bb);
 	cc.appendChild(sb);
 	cc.appendChild(tb);
 	cc.appendChild(vbc);
+	cc.appendChild(rb);
 
 	this.target.appendChild(vc);
 	this.target.appendChild(cc);	
@@ -118,6 +126,13 @@ NicoHTML5.VideoPlayer.prototype = {
 	}
     },
 
+    pressReloadButton: function() {
+	if(this.video.currentTime > 0.0) {
+	    this.onSeek(0.0);
+	}
+	this.reload();
+    },
+
     play: function() {
 	if(this.video.currentSrc == undefined || this.video.currentSrc == "")
 	    return;
@@ -132,17 +147,28 @@ NicoHTML5.VideoPlayer.prototype = {
     },
 
     load: function(src, type) {
-	var source = document.createElement("source");
-	source.src = src;
-	source.type = type
-
-	this.video.appendChild(source);
+	this.video.src = src;
+	if(type)
+	    this.video.type = type;
 
 	this.video.load();
+
 	if(this.loadTimer) {
 	    clearInterval(this.loadTimer);
 	    this.laodTimer = null;
 	}
+    },
+
+    reload: function() {
+	if(this.video.src) {
+	    var src = this.video.src;
+	    var type = this.video.type;
+	    this.load(src, type);	    
+	}
+    },
+
+    onEvent: function(e) {
+	alert(e.type);
     },
 
     onProgress: function() {

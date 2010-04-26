@@ -102,6 +102,8 @@
   width: 514px;
   height: 386px;
   padding: 0;
+  display: block;
+  z-index: 3;
 }
 
 .videoplayer_controls_container {
@@ -119,10 +121,11 @@
   position: absolute;
   top: 0px;
   left: 0px;
-  background: #000;
   border: 1px solid #000;
   width: 512px;
   height: 384px;
+  overlay: visible;
+  -webkit-user-select: none;  
 }
 
 /*
@@ -167,12 +170,37 @@
   letter-spacing: -.1em;
 }
 
-.videoplayer_play_button:hover, .videoplayer_back_button:hover {
+.videoplayer_reload_button {
+  position: absolute;
+  top: 7px;
+  left: 488px;
+
+  color: #333;
+  border: 2px solid #333;
+  background: -webkit-gradient(linear, left top, left bottom, from(#FFF), to(#CCC));
+  -webkit-user-select: none;
+  -webkit-border-radius: 4px;
+  width: 18px;
+  height:18px;
+  line-height: 18px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: -.1em;
+}
+
+.videoplayer_play_button:hover, 
+.videoplayer_back_button:hover,
+.videoplayer_reload_button:hover {
   background: -webkit-gradient(linear, left top, left bottom, from(#FFF), to(#DDD));  
   color: #666;
   border-color: #444;
 }
-.videoplayer_play_button:active, .videoplayer_back_button:active {
+
+.videoplayer_play_button:active, 
+.videoplayer_back_button:active,
+.videoplayer_reload_button:active {
   background: -webkit-gradient(linear, left top, left bottom, from(#FFD700), to(#FF8C00));
   color: #444;
   border-color: #444;
@@ -317,22 +345,22 @@
   left: 1px;
   width: 512px;
   height: 384px;
-  z-index: 1;
+  z-index: 900;
 }
 
 .commentoverlay_comment {
   position: absolute;
   top: -500px;
   left: 0px;
-  z-index: 2;
   text-align: center;
   white-space: nowrap;
   overflow: visible;
   -webkit-user-select: none;
-  text-shadow: #000 0px 0px 3px;
+  text-shadow: #000 0px 0px 1px;
   color: #FFF;
   padding:1px;
   margin; 0px;
+  z-index: 900;
 }
 
 /*

@@ -31,6 +31,7 @@ NicoHTML5.DOMCommentOverlay.prototype = {
 	    layer._isUse = false;
 
 	    this.container.appendChild(layer);
+
 	    this.commentLayers.push(layer);
 	}
     },
@@ -94,7 +95,7 @@ NicoHTML5.DOMCommentOverlay.prototype = {
 	    if(! this.commentLayers[i]._isUse) {
 		layer = this.commentLayers[i];
 		break;
-	    }	    
+	    }
 	}
 
 	if(layer) {

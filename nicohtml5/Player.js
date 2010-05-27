@@ -148,12 +148,15 @@ NicoHTML5.Player.prototype = {
     openDialog: function() {
 	var self = this;
 
+	this.videoPlayer.video.style.display = "none";
+
 	var dlg = document.createElement("div");
 	dlg.className = "dialog";
 	
-	var ifrm = document.createElement("iframe");
+	var ifrm = document.createElement("object");
 	ifrm.className = "dialog_iframe";
-	ifrm.src = "http://flapi.nicovideo.jp/api/getflv/" + this.video_id;
+	ifrm.type = "text/plain";
+	ifrm.data = "http://flapi.nicovideo.jp/api/getflv/" + this.video_id;
 
 	var desc = document.createElement("div");
 	desc.className = "dialog_description";
@@ -181,7 +184,9 @@ NicoHTML5.Player.prototype = {
     },
 
     closeDialog: function() {
-	var dlgs = this.player.getElementsByClassName("dialog");
+	this.videoPlayer.video.style.display = "block";
+
+	var dlgs = this.target.getElementsByClassName("dialog");
 	for(var i=0; i<dlgs.length; i++)
 	    this.player.removeChild(dlgs[i]);
     },

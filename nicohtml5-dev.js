@@ -12,7 +12,7 @@
 
     if(navigator.userAgent.indexOf('AppleWebKit/') > -1) {
 
-	var rootUrl = "http://labs.isidesystem.net/nicoh5dev";
+	var rootUrl = "http://labs.isidesystem.net/nicoh5";
 
 	loader(rootUrl + "/lib/http.js",
 	       "window.xhttp", function() {
@@ -37,7 +37,7 @@
 	       "window.NicoHTML5.DOMCommentOverlay", function() {
 
 	    loader(rootUrl + "/main.js", "false", function() {});
-            document.title = "ver 0.04";
+            document.title = "[NicoHTML5 DEV]" + document.title;
 
         })})})})})})})})
         })});

@@ -44,10 +44,13 @@ NicoHTML5.VideoPlayer.prototype = {
 	v.width = this.options.width;
 	v.height = this.options.height;
 	v.autoplay = false;
+	v.controls = false;
+/*
 	if(!!navigator.userAgent.match(/iPad/))
 	    v.controls = true;
 	else
 	    v.controls = false;
+*/
 
 	v.addEventListener("error",          function() { self.onError(); });
 	v.addEventListener("progress",       function() { self.onProgress(); });

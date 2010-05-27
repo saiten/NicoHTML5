@@ -183,7 +183,7 @@ NicoHTML5.Player.prototype = {
 	var self = this;
 
         self.info = {};
-	return http.get("/api/getflv/" + self.video_id).next(function(req) {
+	return http.get("http://flapi.nicovideo.jp/api/getflv/" + self.video_id).next(function(req) {
 	    if(req.status != 200)
 		throw "response failed.";
 	    
@@ -302,9 +302,6 @@ NicoHTML5.Player.prototype = {
 	    self.createPlayer();
 	    self.log("createplayer() ok");
 
-	    self.log("loading video : " + self.info.url + " ...");
-	    self.videoPlayer.load(self.info.url);
-
 	    return self.getComment();
 	}).next(function() {
 	    self.log("getComment() ok");
@@ -321,6 +318,9 @@ NicoHTML5.Player.prototype = {
 		self.commentEngine.setNGWords(self.ngwords);
 	    if(self.ngusers)
 		self.commentEngine.setNGUsers(self.ngusers);
+
+	    self.log("loading video : " + self.info.url + " ...");
+	    self.videoPlayer.load(self.info.url);
 
 	    self.log("ready.");
 	}).error(function(e) {

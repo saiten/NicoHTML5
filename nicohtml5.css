@@ -103,7 +103,7 @@
   height: 386px;
   padding: 0;
   display: block;
-  z-index: 3;
+  z-index: 0;
 }
 
 .videoplayer_controls_container {
@@ -125,7 +125,8 @@
   width: 512px;
   height: 384px;
   overlay: visible;
-  -webkit-user-select: none;  
+  -webkit-user-select: none;
+  z-index: -1;
 }
 
 /*
@@ -345,7 +346,7 @@
   left: 1px;
   width: 512px;
   height: 384px;
-  z-index: 900;
+  z-index: 1;
 }
 
 .commentoverlay_comment {
@@ -360,7 +361,7 @@
   color: #FFF;
   padding:1px;
   margin; 0px;
-  z-index: 900;
+  z-index: 1;
 }
 
 /*
@@ -531,3 +532,15 @@
 }
 
 
+/*
+ webkit animation
+*/
+
+@-webkit-keyframes normal-animation {
+  from {
+    left: 512px;
+  }
+  to {
+    to: 0px;
+  }
+}

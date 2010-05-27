@@ -40,6 +40,7 @@ NicoHTML5.Player.prototype = {
 	// player
 	var pl = document.createElement("div");
 	pl.className = "nicohtml5_player";
+	this.player = pl;
 
 	// video player
 	var vp = document.createElement("div");
@@ -144,6 +145,47 @@ NicoHTML5.Player.prototype = {
 	this.target.appendChild(pl);
     },
 
+    openDialog: function() {
+	var self = this;
+
+	var dlg = document.createElement("div");
+	dlg.className = "dialog";
+	
+	var ifrm = document.createElement("iframe");
+	ifrm.className = "dialog_iframe";
+	ifrm.src = "http://flapi.nicovideo.jp/api/getflv/" + this.video_id;
+
+	var desc = document.createElement("div");
+	desc.className = "dialog_description";
+	desc.innerHTML = "上記の内容をコピーして再生ボタンをタップしてください";
+
+	var btn = document.createElement("button");
+	btn.className = "dialog_playbutton"
+	btn.innerHTML = "再生";
+	btn.addEventListener("click", function(e) { 
+	    var body = prompt("コピーした内容をペーストしてください", "");
+	    var ret = self.parseInfo(body);
+	    if(ret.st) {
+		self.info = ret.info;
+		self.start();
+	    } else {
+		alert(ret.msg);
+	    }
+	});
+
+	dlg.appendChild(ifrm);
+	dlg.appendChild(desc);
+	dlg.appendChild(btn);
+
+	this.player.appendChild(dlg);
+    },
+
+    closeDialog: function() {
+	var dlgs = this.player.getElementsByClassName("dialog");
+	for(var i=0; i<dlgs.length; i++)
+	    this.player.removeChild(dlgs[i]);
+    },
+
     updateInfo: function() {
 	var videoInfo = this.options.videoInfo;
 
@@ -179,6 +221,27 @@ NicoHTML5.Player.prototype = {
 	}
     },
 
+    parseInfo: function(body) {
+	var info = {};
+	    
+	var datas = body.split("&");
+	for(var i=0; i<datas.length; i++) {
+	    var expr = datas[i].split("=");
+	    info[expr[0]] = decodeURIComponent(expr[1]);			 
+	}
+	
+	if(info.url == undefined)
+	    return { st: false, msg: "cannot get video url." };
+	
+	if(/http:\/\/[^/]+\/smile\?(v|m|s)=/.test(info.url)) {
+	    if(RegExp.$1 != 'm')
+		return { st: false, msg: "this video is not supported." };
+	} else 
+	    return { st: false, msg: "unknown video url" };
+
+	return { st: true, info: info };
+    },
+
     getVideo: function() {
 	var self = this;
 
@@ -186,24 +249,14 @@ NicoHTML5.Player.prototype = {
 	return http.get("http://flapi.nicovideo.jp/api/getflv/" + self.video_id).next(function(req) {
 	    if(req.status != 200)
 		throw "response failed.";
-	    
-	    var info = self.info;
-	    
-	    var datas = req.responseText.split("&");
-	    for(var i=0; i<datas.length; i++) {
-		var expr = datas[i].split("=");
-		info[expr[0]] = decodeURIComponent(expr[1]);			 
-	    }
-	    
-	    if(info.url == undefined)
-		throw "cannot get video url.";
-		
-	    if(/http:\/\/[^/]+\/smile\?(v|m|s)=/.test(info.url)) {
-		if(RegExp.$1 != 'm')
-		    throw "this video is not supported.";
-	    } else 
-		throw "unknown video url";		
-            });
+
+	    var ret = self.parseInfo(req.responseText);
+
+	    if(ret.st)
+		self.info = ret.info;
+	    else
+		throw ret.msg;
+        });
     },
 
     getNGList: function() {
@@ -291,17 +344,20 @@ NicoHTML5.Player.prototype = {
 	}
     },
 
+    prepare: function() {
+	this.createPlayer();
+	this.log("createplayer() ok");
+
+	this.openDialog();
+    },
+
     start: function() {
 	var self = this;
 
+	this.closeDialog();
+
 	Deferred.next(function() {
-	    return self.getVideo();
-	}).next(function() {
 	    self.log("getvideo() ok");
-
-	    self.createPlayer();
-	    self.log("createplayer() ok");
-
 	    return self.getComment();
 	}).next(function() {
 	    self.log("getComment() ok");

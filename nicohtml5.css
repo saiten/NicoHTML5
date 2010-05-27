@@ -531,6 +531,51 @@
   font-size: 11px;
 }
 
+/*
+ dialog
+*/
+
+.dialog {
+  position: absolute;
+  padding: 0;
+  top:     40px;
+  left:    40px;
+  width:  812px;
+  height: 432px;
+  background: -webkit-gradient(linear, left top, left bottom, from(#FFF), to(#DDD));
+  -webkit-border-radius: 4px;
+  border: 2px solid #333;
+  z-index: 100;
+}
+
+.dialog_iframe {
+  position: absolute;
+  top:     20px;
+  left:    20px;
+  width:  772px;
+  height: 200px;
+  background-color: #FFF;
+  border: 2px solid #333;
+}
+
+.dialog_description {
+  position: absolute;
+  top:     240px;
+  left:     20px;
+  width:   772px;
+  height:  100px;
+}
+
+.dialog_playbutton {
+  position: absolute;
+  top:     300px;
+  left:    240px;
+  width:   372px;
+  height:  100px;
+  background: -webkit-gradient(linear, left top, left bottom, from(#BBB), to(#EEE));
+  -webkit-border-radius: 4px;
+  border: 2px solid #333;
+}
 
 /*
  webkit animation

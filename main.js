@@ -39,7 +39,7 @@
 		videoInfo: videoInfo
 	    });
 	    
-	    nicohtml5_player.start();
+	    nicohtml5_player.prepare();
 	}	
     } else {
 	alert("Sorry, Your browser is not supported.")

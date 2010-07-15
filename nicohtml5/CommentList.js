@@ -57,12 +57,19 @@ NicoHTML5.CommentList.prototype = {
 	    var li_tm = document.createElement("div");
 	    li_tm.className = "commentlist_comment_time";
 	    li_tm.innerHTML = "<p>" + NicoHTML5.sec2MinSec(comments[i].vpos / 100) + "</p>";
+
 	    var li_co = document.createElement("div");
 	    li_co.className = "commentlist_comment_comment";
 	    li_co.innerHTML = "<p>" + comments[i].content + "</p>";
+
 	    var li_dt = document.createElement("div");
 	    li_dt.className = "commentlist_comment_date";
-	    li_dt.innerHTML = "<p>" + comments[i].date + "</p>";
+	    var dt = new Date();
+	    dt.setTime(comments[i].date * 1000);
+	    var datestr = (dt.getMonth()+1) + "/" + dt.getDate() + " " 
+                        + dt.getHours() + ":" + dt.getMinutes();
+	    li_dt.innerHTML = "<p>" + datestr + "</p>";
+
 	    var li_no = document.createElement("div");
 	    li_no.className = "commentlist_comment_no";
 	    li_no.innerHTML = "<p>" + comments[i].no + "</p>";
@@ -87,7 +94,7 @@ NicoHTML5.CommentList.prototype = {
 	}
 
 	if(offset - this.list.offsetHeight < 0)
-	    this.list.scrollTop + 0;
+	    this.list.scrollTop = 0;
 	else
 	    this.list.scrollTop = offset - this.list.offsetHeight;
     }

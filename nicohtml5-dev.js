@@ -25,6 +25,8 @@
 	       "window.NicoHTML5.Player", function() {
         loader(rootUrl + "/nicohtml5/VideoPlayer.js", 
 	       "window.NicoHTML5.VideoPlayer", function() {
+        loader(rootUrl + "/nicohtml5/QTVideoPlayer.js", 
+	       "window.NicoHTML5.QTVideoPlayer", function() {
         loader(rootUrl + "/nicohtml5/Seekbar.js",     
 	       "window.NicoHTML5.Seekbar", function() {
         loader(rootUrl + "/nicohtml5/CommentList.js", 
@@ -36,10 +38,12 @@
         loader(rootUrl + "/nicohtml5/DOMCommentOverlay.js", 
 	       "window.NicoHTML5.DOMCommentOverlay", function() {
 
-	    loader(rootUrl + "/main.js", "false", function() {});
             document.title = "[NicoHTML5 DEV]" + document.title;
+            NicoHTML5_StyleSheet = "http://labs.isidesystem.net/nicoh5/nicohtml5-dev.css";
 
-        })})})})})})})})
+	    loader(rootUrl + "/main.js", "false", function() {});
+
+        })})})})})})})})})
         })});
     }
 })();

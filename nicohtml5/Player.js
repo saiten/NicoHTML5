@@ -13,8 +13,10 @@ NicoHTML5.Player.prototype = {
 	this.video_id  = video_id;
 	this.target = target;
 	this.options = {
+	    enableXHttp: false,
+	    videoplayer: "video",
 	    overlaytype: "canvas",
-	    commentInterval: 200,
+	    commentInterval: 200,	    
 	    videoInfo: {
 		duration: 0,
 		viewCount: 0,
@@ -45,16 +47,29 @@ NicoHTML5.Player.prototype = {
 	// video player
 	var vp = document.createElement("div");
 	vp.className = "videoplayer";
-	this.videoPlayer = new NicoHTML5.VideoPlayer(vp, {
-	    width: width,
-	    height: height,
-	    onPlay: function() { self.onPlay(); },
-	    onPause: function() { self.onPause(); },
-	    onEnded: function() { self.onPause(); },
-	    onSeek: function() { self.onSeek(); },
-	    onFailed: function(code, msg) { alert(msg); }
-	});
-	var vv = this.videoPlayer.video;
+
+	if(this.options.videoplayer == "qt") {
+	    this.videoPlayer = new NicoHTML5.QTVideoPlayer(vp, {
+		width: width,
+		height: height,
+		onPlay: function() { self.onPlay(); },
+		onPause: function() { self.onPause(); },
+		onEnded: function() { self.onPause(); },
+		onSeek: function() { self.onSeek(); },
+		onFailed: function(code, msg) { alert(msg); }
+	    });
+	} else {
+	    this.videoPlayer = new NicoHTML5.VideoPlayer(vp, {
+		width: width,
+		height: height,
+		onPlay: function() { self.onPlay(); },
+		onPause: function() { self.onPause(); },
+		onEnded: function() { self.onPause(); },
+		onSeek: function() { self.onSeek(); },
+		onFailed: function(code, msg) { alert(msg); }
+	    });
+	}
+
 	var vc = this.videoPlayer.videoContainer;
 
 	// comment overlay
@@ -148,7 +163,8 @@ NicoHTML5.Player.prototype = {
     openDialog: function() {
 	var self = this;
 
-	this.videoPlayer.video.style.display = "none";
+	if(this.options.videoplayer == "video")
+	    this.videoPlayer.video.style.display = "none";
 
 	var dlg = document.createElement("div");
 	dlg.className = "dialog";
@@ -184,7 +200,8 @@ NicoHTML5.Player.prototype = {
     },
 
     closeDialog: function() {
-	this.videoPlayer.video.style.display = "block";
+	if(this.options.videoplayer == "video")
+	    this.videoPlayer.video.style.display = "inline";
 
 	var dlgs = this.target.getElementsByClassName("dialog");
 	for(var i=0; i<dlgs.length; i++)
@@ -251,7 +268,7 @@ NicoHTML5.Player.prototype = {
 	var self = this;
 
         self.info = {};
-	return http.get("http://flapi.nicovideo.jp/api/getflv/" + self.video_id).next(function(req) {
+	return xhttp.get("http://flapi.nicovideo.jp/api/getflv/" + self.video_id).next(function(req) {
 	    if(req.status != 200)
 		throw "response failed.";
 
@@ -267,11 +284,13 @@ NicoHTML5.Player.prototype = {
     getNGList: function() {
 	var self = this;
 
-	return http.get("/api/configurengclient?mode=get").next(function(req) {
+	return xhttp.get("http://flapi.nicovideo.jp/api/api/configurengclient?mode=get").next(function(req) {
 	    if(req.status != 200)
 		return;
 	    
-	    var xml = req.responseXML;
+	    var parser = new DOMParser();
+	    var xml = parser.parseFromString( req.responseText, "text/xml" );
+
 	    if(xml.getElementsByTagName("response_ngclient")[0].attributes.status.value != "ok")
 		return;
 
@@ -322,38 +341,58 @@ NicoHTML5.Player.prototype = {
 	var self = this;
 
 	if(this.commentUpdate == null) {
-	    this.commentUpdate = setInterval(function() { self.main(); }, this.options.commentInterval);
+	    this.commentUpdate = setTimeout(function() { self.main(); }, 10);
 	}
     },
 
     onPause: function() {
-	clearInterval(this.commentUpdate);
+	clearTimeout(this.commentUpdate);
 	this.commentUpdate = null;
     },
 
     onSeek: function() {
-	var currentTime = this.videoPlayer.video.currentTime;
+	var currentTime = this.videoPlayer.getCurrentTime();
 	this.commentEngine.jump(currentTime);
+
 	if(this.commentUpdate == null)
 	    this.main();
     },
 
     main: function() {
-	var currentTime = this.videoPlayer.video.currentTime;
-
+	var currentTime = this.videoPlayer.getCurrentTime();
 	this.commentEngine.moveComments(currentTime);
 
 	if(this.autoScrollCheck.checked) {
 	    var vpos = Math.floor(currentTime * 100.0);
 	    this.commentList.scrollToVpos(vpos);
 	}
+		
+	if(this.commentUpdate) {	    
+	    var self = this;
+	    this.commentUpdate = setTimeout(function() { self.main(); }, this.options.commentInterval);
+	}
     },
 
     prepare: function() {
 	this.createPlayer();
 	this.log("createplayer() ok");
+	
+	if(this.options.enableXHttp) {
 
-	this.openDialog();
+	    var self = this;
+
+	    Deferred.next(function() {
+		return self.getVideo();
+	    }).next(function() {
+		return self.start();		
+	    }).error(function(e) {
+		self.log("error : " + e);
+		alert(e);
+	    });
+	    
+	} else {
+	    this.openDialog();
+	}
     },
 
     start: function() {
@@ -363,6 +402,7 @@ NicoHTML5.Player.prototype = {
 
 	Deferred.next(function() {
 	    self.log("getvideo() ok");
+	    self.log("loading video : " + self.info.url + " ...");
 	    return self.getComment();
 	}).next(function() {
 	    self.log("getComment() ok");

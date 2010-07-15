@@ -243,20 +243,20 @@ NicoHTML5.CommentEngine.prototype = {
     },
 
     getPositionAtVpos: function (vpos, screenx, startpos, speed) {
-	return Math.floor( (screenx - ( speed * (vpos - startpos) )) - (screenx * 0.2) );
+	return Math.floor( (screenx - ( speed * (vpos - startpos) )) - (screenx * 0.1) );
     },
 
     checkCollisionWidth: function(c1, c2, vpos, screenx) {
 	var c1x = this.getPositionAtVpos(vpos, screenx, 
-					   c1.c.vpos, c1.speed);
+					 c1.c.vpos, c1.speed);
 	var c2x = this.getPositionAtVpos(vpos, screenx, 
-					   c2.c.vpos, c2.speed);
+					 c2.c.vpos, c2.speed);
 
 	if(c1.c.vpos <= c2.c.vpos) {
-	    if(c1x + c1.size.width + 10 > c2x)
+	    if(c1x + c1.size.width + (screenx/10) > c2x)
 		return true;
 	} else {
-	    if(c2x + c2.size.width + 10 > c1x)
+	    if(c2x + c2.size.width + (screenx/10) > c1x)
 		return true;
 	}
 	return false;

@@ -1,14 +1,14 @@
 //
 //
-// NicoHTML5.VideoPlayer
+// NicoHTML5.QTVideoPlayer
 //
 //
 
-NicoHTML5.VideoPlayer = function() {
+NicoHTML5.QTVideoPlayer = function() {
     this.initialize.apply(this, arguments);
 };
 
-NicoHTML5.VideoPlayer.prototype = {
+NicoHTML5.QTVideoPlayer.prototype = {
 
     initialize: function(target, options) {
 	this.target = target;
@@ -29,7 +29,6 @@ NicoHTML5.VideoPlayer.prototype = {
 	}
 
 	this.playTimer = null;
-	this.loop = false;
 	this.createPlayer();
     },
 
@@ -40,34 +39,15 @@ NicoHTML5.VideoPlayer.prototype = {
 	vc.className = "videoplayer_video_container";
 	this.videoContainer = vc;
 	
-	var v = undefined;
+	var obj = document.createElement("object");
+	obj.className = "videoplayer_video";
+	obj.type = "video/quicktime";
+	obj.width = this.options.width;
+	obj.height = this.options.height;
+	this.object = obj;
 
-	v = document.createElement("video");
-	v.className = "videoplayer_video";
-	v.width = this.options.width;
-	v.height = this.options.height;
-	v.autoplay = false;
-	v.controls = false;
+	vc.appendChild(obj);
 	
-	v.addEventListener("error",          function() { self.onError(); });
-	v.addEventListener("progress",       function() { self.onProgress(); });
-	v.addEventListener("loadedmetadata", function() { self.onLoadedMetaData(); });
-	v.addEventListener("loadeddata",     function() { self.onLoadedData(); });
-	v.addEventListener("canplay",        function() { self.onCanPlay(); });
-	v.addEventListener("play",           function() { self.onPlay(); });
-	v.addEventListener("playing",        function() { self.onPlaying(); });
-	v.addEventListener("seek",           function() { self.onSeek(); });
-	v.addEventListener("pause",          function() { self.onPause(); });
-	v.addEventListener("ended",          function() { self.onEnded(); });
-	//v.addEventListener("loadstart", function(e) { self.onEvent(e); });
-	//v.addEventListener("abort",     function(e) { self.onEvent(e); });
-	//v.addEventListener("error",     function(e) { self.onEvent(e); });
-	//v.addEventListener("emptied",   function(e) { self.onEvent(e); });
-	//v.addEventListener("volumechange",   function() { self.onVolumeChange(); });
-	
-	vc.appendChild(v);
-	this.video = v;
-
 	var cc = document.createElement("div");
 	cc.className = "videoplayer_controls_container";
 
@@ -97,82 +77,110 @@ NicoHTML5.VideoPlayer.prototype = {
 	this.volumebar.setBuffered(1.0);
 	vbc.appendChild(vb);
 
-	var lb = document.createElement("div");
-	lb.className = "videoplayer_loop_button";
-	lb.innerHTML = "&#x21A9;";
-	lb.addEventListener("mousedown", function(e) { self.pressLoopButton(e); });
+	var rb = document.createElement("div");
+	rb.className = "videoplayer_reload_button";
+	rb.innerHTML = "R";
+	rb.addEventListener("mousedown", function() { self.pressReloadButton(); });
 	
-	var fb = document.createElement("div");
-	fb.className = "videoplayer_fullscreen_button";
-	fb.innerHTML = "&#x2197;";
-	fb.addEventListener("mousedown", function() { self.pressFullscreenButton(); });
-
 	cc.appendChild(pb);
 	cc.appendChild(bb);
 	cc.appendChild(sb);
 	cc.appendChild(tb);
 	cc.appendChild(vbc);
-	cc.appendChild(lb);
-	//cc.appendChild(fb);
+	cc.appendChild(rb);
 
 	this.target.appendChild(vc);
 	this.target.appendChild(cc);	
     },
 
     getCurrentTime: function() {
-	return this.video.currentTime;
+	return this.qtUtil.currentTime();
     },
 
     pressPlayButton: function() {
-	if(this.video.paused)
+	if(this.qtVideo.GetRate() == 0)
 	    this.play();
 	else
 	    this.pause();
     },
 
     pressBackButton: function() {
-	if(this.video.currentTime > 0.0) {
+	if(this.qtUtil.currentTime() > 0.0) {
 	    this.onSeek(0.0);
 	}
     },
 
-    pressLoopButton: function(e) {
-	if(this.loop) {
-	    this.loop = false;
-	    e.target.className = "videoplayer_loop_button";
-	} else {
-	    this.loop = true;
-	    e.target.className = "videoplayer_loop_button videoplayer_button_active";
-	}
-    },
-
     pressReloadButton: function() {
-	if(this.video.currentTime > 0.0) {
+	if(this.qtUtil.currentTime() > 0.0) {
 	    this.onSeek(0.0);
 	}
 	this.reload();
     },
 
     play: function() {
-	if(this.video.currentSrc == undefined || this.video.currentSrc == "")
-	    return;
-	if(this.video.readyState <= 1) // HAVE_METADATA = 1
+	var src = this.qtVideo.GetURL();
+	if(src == undefined || src == "")
 	    return;
 
-	this.video.play();
+	var s = this.qtVideo.GetPluginStatus();
+	if(s == 'Playable' || s == 'Complete')
+	    this.qtVideo.Play();
     },
 
     pause: function() {
-	this.video.pause();
+	this.qtVideo.Stop();
+    },
+
+    setEmbed: function(src) {
+	var self = this;
+
+	var embed_html = "<embed name='qtVideo' " +
+                         "       postdomevents=true enablejavascript=true controller=true" +
+	                 "       autoplay=false " +
+	                 "       width=" + this.options.width + " height=" + this.options.height + 
+                         "       src='" + src + "'></embed>";
+
+	var div = document.createElement("div");
+	div.innerHTML = embed_html;
+
+	var embed = div.firstChild;
+  
+	this.object.appendChild(embed);
+	
+	this.qtVideo = document.qtVideo;
+	this.qtUtil = {
+	    currentTime: function(tm) { 
+		if(tm)
+		    document.qtVideo.SetTime(tm * document.qtVideo.GetTimeScale());
+
+		return document.qtVideo.GetTime() / document.qtVideo.GetTimeScale(); 
+	    },
+	    duration: function() { return document.qtVideo.GetDuration() / document.qtVideo.GetTimeScale(); },
+	    buffered: function() { return document.qtVideo.GetMaxTimeLoaded() / document.qtVideo.GetTimeScale(); },
+	    volume: function(vol) { 
+		if(vol)
+		    document.qtVideo.SetVolume(vol);
+		return document.qtVideo.GetVolume(); 
+	    }
+	};
+
+	this.object.addEventListener("qt_error",            function() { self.onError(); });
+	this.object.addEventListener("qt_progress",         function() { self.onProgress(); });
+	this.object.addEventListener("qt_loadedmetadata",   function() { self.onLoadedMetaData(); });
+	this.object.addEventListener("qt_loadedfirstframe", function() { self.onLoadedData(); });
+	this.object.addEventListener("qt_canplay",          function() { self.onCanPlay(); });
+	this.object.addEventListener("qt_play",             function() { self.onPlay(); });
+	this.object.addEventListener("qt_timechanged",      function() { self.onPlaying(); });
+	this.object.addEventListener("qt_",                 function() { self.onSeek(); });
+	this.object.addEventListener("qt_pause",            function() { self.onPause(); });
+	this.object.addEventListener("qt_ended",            function() { self.onEnded(); });
     },
 
     load: function(src, type) {
-	this.video.src = src;
-
-	if(type)
-	    this.video.type = type;
-
-	this.video.load();
+	if(this.qtVideo)
+	    this.qtVideo.SetURL(src);
+	else
+	    this.setEmbed(src);
 
 	if(this.loadTimer) {
 	    clearInterval(this.loadTimer);
@@ -181,10 +189,9 @@ NicoHTML5.VideoPlayer.prototype = {
     },
 
     reload: function() {
-	if(this.video.src) {
-	    var src = this.video.src;
-	    var type = this.video.type;
-	    this.load(src, type);	    
+	if(this.qtVideo.GetURL()) {
+	    var src = this.qtVideo.GetURL();
+	    this.load(src);	    
 	}
     },
 
@@ -196,8 +203,8 @@ NicoHTML5.VideoPlayer.prototype = {
     },
 
     onLoadedMetaData: function() {
-	this.seekbar.setDuration(this.video.duration);
-	this.volumebar.setPosition(this.video.volume);
+	this.seekbar.setDuration(this.qtUtil.duration());
+	this.volumebar.setPosition(this.qtUtil.volume());
 	this.onUpdate();
 	
 	var self = this;
@@ -206,10 +213,7 @@ NicoHTML5.VideoPlayer.prototype = {
     },
 
     onLoadedData: function() {
-	if(this.video.buffered.length > 0) {
-	    var b = this.video.buffered.end(0);
-	    this.seekbar.setBuffered(b);
-	}
+	this.seekbar.setBuffered(this.qtUtil.bufferd);
     },
 
     onCanPlay: function() {
@@ -218,22 +222,22 @@ NicoHTML5.VideoPlayer.prototype = {
     },
 
     onPlay: function() {
-    },
-
-    onUpdate: function() {
-	this.timeElm.innerHTML = NicoHTML5.sec2MinSec(this.video.currentTime) + 
-                                 " / " + 
-                                 NicoHTML5.sec2MinSec(this.video.duration);
-	this.seekbar.setPosition(this.video.currentTime, false);
-    },
-
-    onPlaying: function() {
 	var self = this;
 	if(this.playTimer == null)
 	    this.playTimer = setInterval(function() { self.onUpdate(); }, 100);
 
 	if(this.options.onPlay)
 	    this.options.onPlay();
+    },
+
+    onUpdate: function() {
+	this.timeElm.innerHTML = NicoHTML5.sec2MinSec(this.qtUtil.currentTime()) + 
+                                 " / " + 
+                                 NicoHTML5.sec2MinSec(this.qtUtil.duration());
+	this.seekbar.setPosition(this.qtUtil.currentTime(), false);
+    },
+
+    onPlaying: function() {
     },
 
     onPause: function() {
@@ -246,16 +250,12 @@ NicoHTML5.VideoPlayer.prototype = {
     },
 
     onEnded: function() {
-	if(this.loop) {
-	    this.onSeek(0);
-	} else {
-	    if(this.options.onEnded)
-		this.options.onEnded();
-	}
+	if(this.options.onEnded)
+	    this.options.onEnded();
     },
 
     onSeek: function(seekTime) {
-	this.video.currentTime = seekTime;	
+	this.qtUtil.currentTime(seekTime);
 	this.onUpdate();
 
 	if(this.options.onSeek)
@@ -263,7 +263,7 @@ NicoHTML5.VideoPlayer.prototype = {
     },
 
     onVolumeChange: function(volume) {
-	this.video.volume = volume;
+	this.qtUtil.volume(volume);
     },
 
     onError: function() {

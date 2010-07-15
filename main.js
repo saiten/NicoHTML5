@@ -7,12 +7,18 @@
 	    
 	    var container = document.getElementById("flvplayer_container");
 	    container.innerHTML = "";
+
+	    var cssUrl = "http://labs.isidesystem.net/nicoh5/nicohtml5.css";
+	    if(typeof NicoHTML5_StyleSheet != 'undefined')
+		cssUrl = NicoHTML5_StyleSheet;
 	    
-	    var css = document.createElement("link");
-	    css.rel = "stylesheet";
-	    css.href = "http://labs.isidesystem.net/nicoh5/nicohtml5.css";
-	    css.type = "text/css";
-	    document.getElementsByTagName("head")[0].appendChild(css);
+	    var videoPlayer = 'video';
+	    if(typeof NicoHTML5_VideoPlayer != 'undefined')
+		videoPlayer = NicoHTML5_VideoPlayer;
+
+	    var enableXHttp = false;
+	    if(typeof NicoHTML5_EnableXHttp != 'undefined')
+		enableXHttp = NicoHTML5_EnableXHttp;
 	    
 	    var overlayType = 'canvas';
 	    if(typeof NicoHTML5_OverlayType != 'undefined')
@@ -22,6 +28,12 @@
 	    if(typeof NicoHTML5_CommentInterval != 'undefined')
 		commentInterval = NicoHTML5_CommentInterval;
 
+	    var css = document.createElement("link");
+	    css.rel = "stylesheet";
+	    css.href = cssUrl;
+	    css.type = "text/css";
+	    document.getElementsByTagName("head")[0].appendChild(css);
+	    
 	    var videoInfo = {};
 	    if(Video) {
 		videoInfo = {
@@ -34,8 +46,10 @@
 	    }
 
 	    nicohtml5_player = new NicoHTML5.Player(video_id, container, { 
+		videoplayer: videoPlayer,
 		overlaytype: overlayType, 
 		commentInterval: commentInterval,
+		enableXHttp: enableXHttp,
 		videoInfo: videoInfo
 	    });
 	    

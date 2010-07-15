@@ -9,7 +9,6 @@ NicoHTML5.DOMCommentOverlay = function() {
 };
 
 NicoHTML5.DOMCommentOverlay.prototype = {    
-    DISABLE_CLIP: "rect(0px 0px 0px 0px)",
 
     initialize: function(container, width, height, maxShow) {
 	this.container = container;
@@ -27,7 +26,7 @@ NicoHTML5.DOMCommentOverlay.prototype = {
 	    var layer = document.createElement("div");
 	    layer.className = "commentoverlay_comment";
 	    layer.style.display = "block";
-            layer.style.clip = "rect(0 0 0 0)";
+	    layer.style.visibility = "hidden";
 	    layer._isUse = false;
 
 	    this.container.appendChild(layer);
@@ -53,40 +52,6 @@ NicoHTML5.DOMCommentOverlay.prototype = {
 		            "'ＭＳ Ｐゴ シック', sans-serif");
 	    this.lineHeights.push(size + 4);
 	}
-    },
-
-    clippingLayer: function(layer) {
-	if(! layer._isUse) {
-	    if(layer.style.clip != this.DISABLE_CLIP)
-		layer.style.clip = this.DISABLE_CLIP;
-	    return;
-	}    
-
-	var top = 0;
-	if(layer.offsetTop < 0 && layer.offsetTop + layer.scrollHeight > 0)
-	    top = layer.scrollHeight - layer.offsetTop;
-
-	var bottom = layer.scrollHeight;
-	if(layer.offsetTop < this.overlayHeight && 
-	   layer.offsetTop + layer.scrollHeight > this.overlayHeight)
-	    bottom = this.overlayHeight - layer.offsetTop;
-	if(layer.offsetTop >= this.overlayHeight)
-	    bottom = 0;
-
-	var left = 0;
-	if(layer.offsetLeft < 0 && layer.offsetLeft + layer.scrollWidth > 0)
-	    left = -layer.offsetLeft;
-
-	var right = layer.scrollWidth;
-	if(layer.offsetLeft < this.overlayWidth && 
-	   layer.offsetLeft + layer.scrollWidth > this.overlayWidth)
-	    right = this.overlayWidth - layer.offsetLeft;
-	if(layer.offsetLeft + layer.scrollWidth < 0 || layer.offsetLeft >= this.overlayWidth)
-	    bottom = 0;
-
-	var rect = "rect(" + top + "px " + right + "px " + bottom + "px " + left + "px)";
-	if(layer.style.clip != rect)
-	    layer.style.clip = rect;
     },
 
     calculateCommentSize: function(c) {
@@ -121,7 +86,7 @@ NicoHTML5.DOMCommentOverlay.prototype = {
 	if(c.layer) {
 	    c.layer.style.top = c.pos.y + "px";
 	    c.layer.style.left = c.pos.x + "px";
-	    this.clippingLayer(c.layer);
+	    c.layer.style.visibility = "visible";
 	}
     },
     
@@ -129,8 +94,7 @@ NicoHTML5.DOMCommentOverlay.prototype = {
 	if(c.layer) {
 	    c.layer._isUse = false;
 	    c.layer.innerHTML = "";
-	    c.layer.style.top = "-500px";
-	    c.layer.style.clip = this.DISABLE_CLIP;
+	    c.layer.style.visibility = "hidden";
 	}
     },
 
@@ -140,7 +104,6 @@ NicoHTML5.DOMCommentOverlay.prototype = {
 	    if(c.layer) {
 		c.layer.style.top = c.pos.y + "px";
 		c.layer.style.left = c.pos.x + "px";
-		this.clippingLayer(c.layer);
 	    }
 	}
     },
